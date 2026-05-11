@@ -1,0 +1,50 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      # Host ports changed to avoid conflict when 6333 is already in use locally.
+      - "6335:6333"
+      - "6336:6334"
+    volumes:
+      - ./storage/qdrant:/qdrant/storage
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ai_research_backend
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+      UVICORN_RELOAD: "0"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    volumes:
+      - ./:/app
+    command: >
+      sh -c "if [ \"$$UVICORN_RELOAD\" = \"1\" ]; then
+      uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload;
+      else
+      uvicorn backend.main:app --host 0.0.0.0 --port 8000;
+      fi"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: ai_research_frontend
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    volumes:
+      - ./:/app
+    command: streamlit run frontend/app.py --server.address 0.0.0.0 --server.port 8501
