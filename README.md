@@ -61,7 +61,7 @@ Extensible service layer for:
 Create a `.env` file in project root and add:
 
 - `OPENAI_API_KEY=...` (your OpenAI API key)
-- `QDRANT_URL=http://qdrant:6333` (or your custom Qdrant URL)
+- `QDRANT_URL=http://qdrant:6333` (Docker Compose: backend talks to the `qdrant` service on the **container** port `6333`. From your **host** browser, use `http://localhost:6335` — see ports below.)
 - `DATABASE_URL=postgresql+psycopg2://user:password@host:5432/dbname`
 - `SECRET_KEY=...` (long random secret)
 - `QDRANT_COLLECTION=ai_research_chunks`
@@ -78,7 +78,7 @@ docker compose up --build
 Services:
 - Backend: `http://localhost:8000`
 - Frontend: `http://localhost:8501`
-- Qdrant: `http://localhost:6335`
+- Qdrant (dashboard / host): `http://localhost:6335` (mapped from container `6333` to avoid clashes with a local Qdrant on `6333`)
 
 ## API Endpoints
 
