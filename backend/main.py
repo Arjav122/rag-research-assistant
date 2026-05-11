@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,9 +61,10 @@ def health_check():
     return {"status": "ok", "service": "ai-research-assistant-backend"}
 
 
-@app.on_event("startup")
-def warm_retrieval_components() -> None:
-    """Preload heavy retrieval assets to avoid first-query cold starts."""
+def _warm_retrieval_background() -> None:
+    """BM25 + reranker can take many minutes on CPU; run off the ASGI startup path so
+    Uvicorn binds and /health works immediately while warmup continues.
+    """
     settings = get_settings()
     if settings.retrieval_use_corpus_bm25:
         try:
@@ -75,3 +77,13 @@ def warm_retrieval_components() -> None:
         logger.info("Startup warmup: reranker ready")
     except Exception:
         logger.exception("Startup warmup failed for reranker")
+
+
+@app.on_event("startup")
+def warm_retrieval_components() -> None:
+    threading.Thread(
+        target=_warm_retrieval_background,
+        name="retrieval-warmup",
+        daemon=True,
+    ).start()
+    logger.info("Startup warmup scheduled in background (BM25 + reranker); API is accepting requests")
