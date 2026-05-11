@@ -78,7 +78,7 @@ docker compose up --build
 Services:
 - Backend: `http://localhost:8000`
 - Frontend: `http://localhost:8501`
-- Qdrant: `http://localhost:6333`
+- Qdrant: `http://localhost:6335`
 
 ## API Endpoints
 
