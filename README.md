@@ -1,4 +1,4 @@
-# AI Research Assistant Platform
+# RAG Research Assistant
 
 Production-grade, modular AI research intelligence platform built with FastAPI, Streamlit, Qdrant, PostgreSQL, LangChain, and LangGraph.
 
